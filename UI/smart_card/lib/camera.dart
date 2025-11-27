@@ -3,6 +3,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path_provider/path_provider.dart';
+
+// You can now use functions like getTemporaryDirectory()
+// and FlutterImageCompress.compressAndGetFile()
+
 
 
 class ImagePick extends StatefulWidget {
@@ -110,20 +116,43 @@ class _ImagePickState extends State<ImagePick> {
   Future<void> _uploadImageToServer() async {
     if (_imageFile == null) return;
 
-    final uri = Uri.parse("Url");
-    // Use a MultipartRequest for file uploads
-    var request = http.MultipartRequest('POST', uri);
+    // We will track the final file path we use for upload
+    String filePathToUpload = _imageFile!.path; 
+    File? tempCompressedFile; // Keep track of the temp file for later deletion
 
     try {
-      // Attach the file to the request with a field name (e.g., 'image')
+      // --- On-Device Image Processing (Resize/Compress to JPG) ---
+      final Directory tempDir = await getTemporaryDirectory();
+      final String targetPath = '${tempDir.path}/compressed_image.jpg';
+
+      XFile? compressedFile = await FlutterImageCompress.compressAndGetFile(
+        _imageFile!.path,
+        targetPath,
+        minHeight: 500, // Longest side targeted
+        minWidth: 500,  // Longest side targeted
+        quality: 80,    // JPG Quality
+        format: CompressFormat.jpeg, // Ensure output is JPG
+      );
+
+      if (compressedFile != null) {
+        tempCompressedFile = File(compressedFile.path);
+        filePathToUpload = tempCompressedFile.path; // Update the path we use for upload
+      } else {
+        debugPrint("Compression failed, uploading original file.");
+      }
+      // --- End Processing ---
+
+      final uri = Uri.parse("http://localhost:3000/insert"); // Use your URL
+      var request = http.MultipartRequest('POST', uri);
+
+      // Use the potentially compressed image file path
       request.files.add(
         await http.MultipartFile.fromPath(
-          'image', // <-- This field name must match what your Node.js/Backend expects
-          _imageFile!.path,
+          'image', // Field name for your Node server
+          filePathToUpload,
         ),
       );
 
-      // Send the request
       final response = await request.send();
 
       // Check the response status
@@ -133,7 +162,6 @@ class _ImagePickState extends State<ImagePick> {
         ScaffoldMessenger.of(context).showSnackBar(
            const SnackBar(content: Text('Image uploaded successfully!')),
         );
-        // Clear the image after success if needed
         setState(() {
           _imageFile = null;
         });
@@ -149,9 +177,14 @@ class _ImagePickState extends State<ImagePick> {
       ScaffoldMessenger.of(context).showSnackBar(
            SnackBar(content: Text('Network error: $e')),
       );
+    } finally {
+      // Ensure the temporary compressed file is deleted after the request finishes
+      if (tempCompressedFile != null && await tempCompressedFile.exists()) {
+        await tempCompressedFile.delete();
+        debugPrint("Temporary compressed file deleted.");
+      }
     }
   }
-
 
 
 }
