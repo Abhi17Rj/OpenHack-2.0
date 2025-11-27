@@ -1,15 +1,15 @@
-// lib/contact.dart (Modified for half height)
+// lib/contact.dart (Final Corrected Version)
 
 import 'package:flutter/material.dart';
 
-// Data model class (remains the same)
+// Data model class
 class ContactDetails {
   final String name;
   final String phone;
   final String email;
   final String city;
 
-  ContactDetails({
+  const ContactDetails({
     required this.name,
     required this.phone,
     required this.email,
@@ -17,56 +17,44 @@ class ContactDetails {
   });
 }
 
-// The ContactPage screen widget
-class ContactPage extends StatelessWidget {
+// The ContactCard widget
+class ContactCard extends StatelessWidget {
   final ContactDetails contact;
 
-  const ContactPage({Key? key, required this.contact}) : super(key: key);
+  const ContactCard({Key? key, required this.contact}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Contact Details"),
-        backgroundColor: Colors.teal,
+    return Card( 
+      elevation: 0.0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0), 
       ),
-      body: Center(
-        // The modified Card widget
-        child: Card(
-          elevation: 5.0,
-          margin: const EdgeInsets.all(16.0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            // We use a Column with custom Rows instead of ListTiles to save space
-            child: Column(
-              mainAxisSize: MainAxisSize.min, // Makes the card height minimal
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // --- Name (Now simple Text, not a ListTile) ---
-                Text(
-                  contact.name,
-                  style: const TextStyle(
-                      fontSize: 18.0, 
-                      fontWeight: FontWeight.bold),
-                ),
-                const Divider(height: 20.0), // Smaller divider height
-
-                // --- Phone (Compact Row) ---
-                _buildCompactRow(Icons.phone, contact.phone),
-                const SizedBox(height: 8.0), // Small space between details
-
-                // --- Email (Compact Row) ---
-                _buildCompactRow(Icons.email, contact.email),
-                const SizedBox(height: 8.0),
-
-                // --- Address (City) (Compact Row) ---
-                _buildCompactRow(Icons.location_city, contact.city),
-              ],
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          // *** The children list must contain all the widgets: ***
+          children: [ 
+            Text( 
+              contact.name,
+              style: const TextStyle(
+                  fontSize: 18.0, 
+                  fontWeight: FontWeight.bold),
             ),
-          ),
+            const Divider(height: 20.0),
+
+            // *** We must call the helper methods here to display the info: ***
+            _buildCompactRow(Icons.phone, contact.phone),
+            const SizedBox(height: 8.0),
+
+            _buildCompactRow(Icons.email, contact.email),
+            const SizedBox(height: 8.0),
+
+            _buildCompactRow(Icons.location_city, contact.city),
+          ],
         ),
       ),
     );
@@ -77,11 +65,11 @@ class ContactPage extends StatelessWidget {
     return Row(
       children: [
         Icon(icon, color: Colors.teal, size: 18.0),
-        const SizedBox(width: 12.0), // Space between icon and text
-        Flexible( // Ensures text wraps if it's too long
+        const SizedBox(width: 12.0),
+        Flexible(
           child: Text(
             text,
-            style: const TextStyle(fontSize: 14.0), // Smaller font size
+            style: const TextStyle(fontSize: 14.0),
           ),
         ),
       ],
