@@ -1,6 +1,7 @@
 // lib/contact.dart (Final Corrected Version)
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // Data model class
 class ContactDetails {
@@ -47,7 +48,12 @@ class ContactCard extends StatelessWidget {
             const Divider(height: 20.0),
 
             // *** We must call the helper methods here to display the info: ***
-            _buildCompactRow(Icons.phone, contact.phone),
+            GestureDetector(child: _buildCompactRow(Icons.phone, contact.phone), 
+              onTap: () {
+                print("object");
+                _makePhoneCall(contact.phone);
+              },
+            ),
             const SizedBox(height: 8.0),
 
             _buildCompactRow(Icons.email, contact.email),
@@ -74,5 +80,22 @@ class ContactCard extends StatelessWidget {
         ),
       ],
     );
+  }
+
+
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    // Use the 'tel:' scheme followed by the phone number
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: phoneNumber,
+    );
+
+    // Check if the URL can be launched and then launch it
+    if (await canLaunchUrl(launchUri)) {
+      await launchUrl(launchUri);
+    } else {
+      // Handle the error (e.g., show a SnackBar to the user)
+      throw 'Could not launch $phoneNumber';
+    }
   }
 }

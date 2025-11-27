@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_card/scan.dart';
 import 'contact.dart'; // Import the contact card widget and model
+import 'list_card.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -36,7 +37,19 @@ class HomeScreen extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => ListCard()));
+              }, // Disable button if no image is picked
+              child: Text("Upload Image"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.pinkAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5.0), // Adjust the radius for roundness
+                )
+              ),
+            ),
             ContactCard(contact: sampleContact),
             
             const SizedBox(height: 32),

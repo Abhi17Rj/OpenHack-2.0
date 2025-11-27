@@ -57,7 +57,7 @@ class _ImagePickState extends State<ImagePick> {
                 backgroundColor: Colors.pinkAccent,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30.0), // Adjust the radius for roundness
+                  borderRadius: BorderRadius.circular(5.0), // Adjust the radius for roundness
                 )
               ),
             ),
