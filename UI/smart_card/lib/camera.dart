@@ -53,6 +53,13 @@ class _ImagePickState extends State<ImagePick> {
             ElevatedButton(
               onPressed: _imageFile != null ? _uploadImageToServer : null, // Disable button if no image is picked
               child: Text("Upload Image"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.pinkAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0), // Adjust the radius for roundness
+                )
+              ),
             ),
             const SizedBox(height: 15.0),
             GestureDetector(

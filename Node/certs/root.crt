@@ -1,0 +1,1 @@
+cockroach sql --url "postgresql://deepak@cyan-coder-10674.jxf.gcp-europe-west1.cockroachlabs.cloud:26257/bussiness_card?sslmode=verify-full"
