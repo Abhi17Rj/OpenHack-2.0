@@ -1,6 +1,7 @@
 // lib/home.dart (Corrected)
 
 import 'package:flutter/material.dart';
+import 'package:smart_card/scan.dart';
 import 'contact.dart'; // Import the contact card widget and model
 
 class HomeScreen extends StatelessWidget {
@@ -65,8 +66,9 @@ class HomeScreen extends StatelessWidget {
             minimumSize: const Size(double.infinity, 50),
           ),
           onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-               const SnackBar(content: Text('Scanning Card...')),
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ScanPage()),
             );
           },
           child: const Text("Scan Card", style: TextStyle(fontSize: 18, color: Colors.white)),
