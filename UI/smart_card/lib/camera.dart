@@ -142,13 +142,13 @@ class _ImagePickState extends State<ImagePick> {
       }
       // --- End Processing ---
 
-      final uri = Uri.parse("http://localhost:3000/insert"); // Use your URL
+      final uri = Uri.parse("http://192.168.110.129:3000/upload-card"); // Use your URL
       var request = http.MultipartRequest('POST', uri);
 
       // Use the potentially compressed image file path
       request.files.add(
         await http.MultipartFile.fromPath(
-          'image', // Field name for your Node server
+          'file', // Field name for your Node server
           filePathToUpload,
         ),
       );

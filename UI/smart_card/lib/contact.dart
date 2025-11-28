@@ -9,14 +9,29 @@ class ContactDetails {
   final String phone;
   final String email;
   final String city;
+  final String company;
 
   const ContactDetails({
     required this.name,
     required this.phone,
     required this.email,
     required this.city,
+    required this.company,
   });
+
+  factory ContactDetails.fromJson(Map<String, dynamic> json) {
+    return ContactDetails(
+      //cId: json['c_id'],
+      name: json['f_name'] ?? 'N/A',
+      phone: json['phone_no'] ?? 'N/A',
+      email: json['email'] ?? 'N/A',
+      city: json['address'] ?? 'N/A',
+      company: json['company'] ?? 'N/A',
+    );
+  }
 }
+
+
 
 // The ContactCard widget
 class ContactCard extends StatelessWidget {
@@ -44,6 +59,12 @@ class ContactCard extends StatelessWidget {
               style: const TextStyle(
                   fontSize: 18.0, 
                   fontWeight: FontWeight.bold),
+            ),
+            Text( 
+              contact.company,
+              style: const TextStyle(
+                  fontSize: 12.0, 
+                  fontStyle: FontStyle.italic),
             ),
             const Divider(height: 20.0),
 

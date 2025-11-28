@@ -15,6 +15,7 @@ class HomeScreen extends StatelessWidget {
     phone: "+91 9876543210",
     email: "abhishek@example.com",
     city: "Chennai, TN",
+    company: "LTTS"
   );
 
   @override
@@ -37,21 +38,24 @@ class HomeScreen extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => ListCard()));
-              }, // Disable button if no image is picked
-              child: Text("Upload Image"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.pinkAccent,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5.0), // Adjust the radius for roundness
-                )
+            
+            ContactCard(contact: sampleContact),
+            SizedBox(
+              width: double.infinity, // This forces the button to expand horizontally
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ListCard()));
+                }, 
+                child: Text("View All"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.pinkAccent,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5.0), 
+                  ),
+                ),
               ),
             ),
-            ContactCard(contact: sampleContact),
-            
             const SizedBox(height: 32),
             const Text(
               "Documents",

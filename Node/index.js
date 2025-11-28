@@ -95,10 +95,11 @@ app.delete("/deletecard/:id", async (req, res) => {
 
 // ----------------- New API: Upload & Process Image -----------------
 
-const LLM_API_URL = "http://localhost:8000/extract"; // FastAPI endpoint
+const LLM_API_URL = "http://127.0.0.1:8000/extract?mode=auto"; // FastAPI endpoint
 
 app.post("/upload-card", upload.single("file"), async (req, res) => {
   try {
+    console.log(req);
     if (!req.file) {
       return res.status(400).json({ error: "No image uploaded." });
     }
@@ -106,11 +107,12 @@ app.post("/upload-card", upload.single("file"), async (req, res) => {
     // Send image to FastAPI LLM service
     const formData = new FormData();
     const fileStream = fs.createReadStream(req.file.path);
-    formData.append("file", fileStream);
-
-    const llmRes = await axios.post(`${LLM_API_URL}?mode=llm`, formData, {
+    formData.append("file", fileStream, req.file.originalname);
+    console.log(formData);
+    const llmRes = await axios.post(`${LLM_API_URL}`, formData, {
       headers: formData.getHeaders(),
-      timeout: 60000,
+      //file: FormData.file,
+      timeout: 600000,
     });
 
     const cardData = llmRes.data;

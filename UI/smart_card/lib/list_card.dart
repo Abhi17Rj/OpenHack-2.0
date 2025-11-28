@@ -1,8 +1,9 @@
-// lib/list_card.dart (Updated version of the code you provided)
+// lib/list_card.dart
 
 import 'package:flutter/material.dart';
-// import 'camera.dart'; // Unused in this context, but kept
-import 'contact.dart'; // Import your ContactCard and ContactDetails classes
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'contact.dart'; 
 
 class ListCard extends StatefulWidget {
   const ListCard({super.key});
@@ -12,88 +13,140 @@ class ListCard extends StatefulWidget {
 }
 
 class _ListCardState extends State<ListCard> {
-  // List variable to hold the fetched records
   List<ContactDetails> _contactRecords = [];
   bool _isLoading = true;
+  String _error = "";
+  // State variable to control visibility of the search bar
+  bool _isSearching = false; 
+  // Controller for the search input field
+  final TextEditingController _searchController = TextEditingController();
+
+  final String apiBaseUrl = "http://192.168.110.129:3000"; 
 
   @override
   void initState() {
     super.initState();
-    // Fetch the data as soon as the widget initializes
     _fetchRecords();
   }
 
-  // Method to manually "fetch" 5 records
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   Future<void> _fetchRecords() async {
-    // Simulate a network delay
-    await Future.delayed(Duration(seconds: 1));
-
-    // Manually create 5 sample records
-    final List<ContactDetails> fetchedData = [
-      ContactDetails(
-          name: "John Doe",
-          phone: "1234567890",
-          email: "john.doe@example.com",
-          city: "New York"),
-      ContactDetails(
-          name: "Jane Smith",
-          phone: "0987654321",
-          email: "jane.smith@example.com",
-          city: "Los Angeles"),
-      ContactDetails(
-          name: "Alice Johnson",
-          phone: "5551234567",
-          email: "alice@example.com",
-          city: "Chicago"),
-      ContactDetails(
-          name: "Bob Williams",
-          phone: "5559876543",
-          email: "bob@example.com",
-          city: "Houston"),
-      ContactDetails(
-          name: "Charlie Brown",
-          phone: "1112223333",
-          email: "charlie@example.com",
-          city: "Miami"),
-    ];
-
-    // Update the state with the new data and stop loading indicator
+    // ... (Your existing _fetchRecords logic goes here, omitted for brevity) ...
+    // Placeholder code:
     setState(() {
-      _contactRecords = fetchedData;
-      _isLoading = false;
+      _isLoading = true;
+      _error = "";
     });
+    final uri = Uri.parse('$apiBaseUrl/allcards');
+    try {
+      final response = await http.get(uri);
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonList = json.decode(response.body);
+        _contactRecords = jsonList.map((jsonItem) => ContactDetails.fromJson(jsonItem)).toList();
+        _isLoading = false;
+      } else {
+        _error = "Failed to load cards.";
+        _isLoading = false;
+      }
+    } catch (e) {
+      _error = "Network Error.";
+      _isLoading = false;
+    }
+    setState(() {}); // Update UI
+  }
+
+  // Blank method to be filled later
+  void _performSearch(String query) {
+    print("Search functionality needs to be implemented for query: $query");
+    // Implementation of search goes here later
+    // Example: filter _contactRecords based on query
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Scan Card",
-          style: TextStyle(color: Colors.white),
-        ),
-        centerTitle: true,
         backgroundColor: Colors.blue,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(_isSearching ? Icons.arrow_back : Icons.list, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context);
+            if (_isSearching) {
+              // Close search mode
+              setState(() {
+                _isSearching = false;
+                _searchController.clear();
+              });
+              // Optional: Refetch original data if needed
+              // _fetchRecords(); 
+            } else {
+              Navigator.pop(context);
+            }
           },
         ),
+        title: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: _isSearching
+              ? TextField(
+                  key: const ValueKey<bool>(true), // Key helps AnimatedSwitcher work
+                  controller: _searchController,
+                  autofocus: true,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    hintText: 'Search cards...',
+                    hintStyle: TextStyle(color: Colors.white70),
+                    border: InputBorder.none,
+                  ),
+                  onSubmitted: _performSearch, // Activates on keyboard 'Done' or 'Search' press
+                )
+              : const Text(
+                  "Scan Card",
+                  key: ValueKey<bool>(false), // Key helps AnimatedSwitcher work
+                  style: TextStyle(color: Colors.white),
+                ),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(_isSearching ? Icons.search : Icons.search, color: Colors.white),
+            onPressed: () {
+              setState(() {
+                // Toggle search mode
+                _isSearching = !_isSearching;
+                if (!_isSearching) {
+                  _searchController.clear();
+                }
+              });
+              if (_isSearching && _searchController.text.isNotEmpty) {
+                // Manually trigger search if icon pressed while text is entered
+                _performSearch(_searchController.text);
+              }
+            },
+          ),
+          if (!_isSearching) // Only show refresh button when not searching
+            IconButton(
+              icon: Icon(Icons.refresh, color: Colors.white),
+              onPressed: _fetchRecords,
+            ),
+        ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator()) // Show a spinner while loading
-          : ListView.builder(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: _contactRecords.length,
-              itemBuilder: (context, index) {
-                // Pass each record to your custom ContactCard widget
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: ContactCard(contact: _contactRecords[index]),
-                );
-              },
-            ),
+          ? Center(child: CircularProgressIndicator())
+          : _error.isNotEmpty
+              ? Center(child: Text(_error))
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16.0),
+                  itemCount: _contactRecords.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: ContactCard(contact: _contactRecords[index]),
+                    );
+                  },
+                ),
     );
   }
 }

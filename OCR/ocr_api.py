@@ -127,9 +127,12 @@ async def extract(
     mode: str = Query("auto", pattern="^(auto|llm|local)$")
 ):
     if not file.content_type.startswith("image/"):
+        print(file)
         raise HTTPException(status_code=400, detail="Please upload an image.")
 
+    print(file)
     contents = await file.read()
+    print("yes")
 
     try:
         img = Image.open(io.BytesIO(contents)).convert("RGB")
