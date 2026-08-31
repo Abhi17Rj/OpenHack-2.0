@@ -73,20 +73,34 @@ def heuristic_extract(text: str) -> Dict[str, Optional[str]]:
 
     city = None
     for ln in lines:
-        for c in CITY_LIST:
-            if c in ln.lower():
-                city = c.title()
-                break
+        if "city" in ln.lower():
+            city = ln.title()
+            break
+    
+    country = None
+    for ln in lines:
+        if "country" in ln.lower():
+            city = ln.title()
+            break
 
-    country = "India" if city else None
+    # country = "India" if city else None
+
+    if city == None:
+        city = ' '
+
+    
+    if country == None:
+        country = ' '
+
+ 
+
 
     return {
         "name": name,
         "m_no": m_no,
         "mail": mail,
         "company_name": company,
-        "city": city,
-        "country": country
+        "city": city+country,
     }
 
 def call_llama_vision(image_bytes: bytes) -> Optional[Dict[str,Any]]:

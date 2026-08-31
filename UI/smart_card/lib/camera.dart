@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
+import 'config.dart';
 
 // You can now use functions like getTemporaryDirectory()
 // and FlutterImageCompress.compressAndGetFile()
@@ -22,6 +23,7 @@ class _ImagePickState extends State<ImagePick> {
   XFile? _imageFile;
   //File? _image;
   final ImagePicker _picker = ImagePicker();
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +48,10 @@ class _ImagePickState extends State<ImagePick> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
+            SizedBox(
+              width: 300,
+              height: 300,
+              child: Expanded(child: _isLoading ? const Center(child: CircularProgressIndicator()) : Container(
                         height: 300.0,
                         width: 300.0,
                         child: ClipRRect(
@@ -54,7 +59,9 @@ class _ImagePickState extends State<ImagePick> {
                           child: _imageFile != null ?
                               Image.file(File(_imageFile!.path), fit: BoxFit.cover) : Image.asset('assets/image.png', fit: BoxFit.fill),
                         ),
-                    ),
+                    )),
+            ),
+            
             const SizedBox(height: 15.0),
             ElevatedButton(
               onPressed: _imageFile != null ? _uploadImageToServer : null, // Disable button if no image is picked
@@ -101,6 +108,7 @@ class _ImagePickState extends State<ImagePick> {
 
       if (pickedFile != null) {
         setState(() {
+          
           _imageFile = pickedFile;
           print("setState called. _imageFile is now not null.");
         });
@@ -115,6 +123,9 @@ class _ImagePickState extends State<ImagePick> {
 
   Future<void> _uploadImageToServer() async {
     if (_imageFile == null) return;
+    setState(() {
+      _isLoading = true;
+    });
 
     // We will track the final file path we use for upload
     String filePathToUpload = _imageFile!.path; 
@@ -142,7 +153,7 @@ class _ImagePickState extends State<ImagePick> {
       }
       // --- End Processing ---
 
-      final uri = Uri.parse("http://192.168.110.129:3000/upload-card"); // Use your URL
+      final uri = Uri.parse(ApiConstants.uploadCardEndpoint); // Use your URL
       var request = http.MultipartRequest('POST', uri);
 
       // Use the potentially compressed image file path
@@ -164,6 +175,7 @@ class _ImagePickState extends State<ImagePick> {
         );
         setState(() {
           _imageFile = null;
+          _isLoading = false;
         });
       } else {
         final responseData = await response.stream.bytesToString();

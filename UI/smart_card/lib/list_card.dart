@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'contact.dart'; 
+import 'config.dart';
 
 class ListCard extends StatefulWidget {
   const ListCard({super.key});
@@ -21,7 +22,6 @@ class _ListCardState extends State<ListCard> {
   // Controller for the search input field
   final TextEditingController _searchController = TextEditingController();
 
-  final String apiBaseUrl = "http://192.168.110.129:3000"; 
 
   @override
   void initState() {
@@ -42,7 +42,7 @@ class _ListCardState extends State<ListCard> {
       _isLoading = true;
       _error = "";
     });
-    final uri = Uri.parse('$apiBaseUrl/allcards');
+    final uri = Uri.parse(ApiConstants.allCardsEndpoint);
     try {
       final response = await http.get(uri);
       if (response.statusCode == 200) {

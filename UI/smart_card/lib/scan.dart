@@ -1,8 +1,44 @@
 import 'package:flutter/material.dart';
-import 'camera.dart';
+import 'package:smart_card/camera.dart'; // Ensure this path is correct
+import 'package:file_picker/file_picker.dart';
+import 'pdf_viewer.dart'; // Ensure this path is correct
 
-class ScanPage extends StatelessWidget {
+// Changed from StatelessWidget to StatefulWidget
+class ScanPage extends StatefulWidget {
   const ScanPage({super.key});
+
+  @override
+  State<ScanPage> createState() => _ScanPageState();
+}
+
+class _ScanPageState extends State<ScanPage> {
+  // The logic is moved inside the State class
+  Future<void> _pickPdfFromFile() async {
+    // 1. Add the missing file picker logic
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+
+    if (result != null && result.files.single.path != null) {
+      final filePath = result.files.single.path!;
+      final fileName = result.files.single.name; // Get the file name
+
+      // 2. 'context' is now available inside the State class
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PdfViewerPage( // Use the new page
+            path: filePath, 
+            fileName: fileName,
+          )
+        ),
+      );
+    } else {
+      // Handle cancellation or error
+      print('File picking cancelled or error occurred.');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,10 +84,8 @@ class ScanPage extends StatelessWidget {
             const SizedBox(height: 15.0),
             _ScanOptionButton(
               iconWidget: const Icon(Icons.file_open, color: Colors.black, size: 120,),
-              label: "Select from image",
-              onTap: () {
-                // Button functionality left empty as requested
-              },
+              label: "Select from files",
+              onTap: _pickPdfFromFile, // Assigned the function here
             ),
           ],
         ),
@@ -60,7 +94,7 @@ class ScanPage extends StatelessWidget {
   }
 }
 
-// A reusable widget for the two card buttons
+// A reusable widget for the two card buttons (StatelessWidget remains correct)
 class _ScanOptionButton extends StatelessWidget {
   final Widget iconWidget;
   final String label;
@@ -98,7 +132,8 @@ class _ScanOptionButton extends StatelessWidget {
   }
 }
 
-// A custom widget to draw the specific QR scanner graphic shown in the image
+// ... (_QrScannerIcon StatelessWidget remains unchanged below) ...
+
 class _QrScannerIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

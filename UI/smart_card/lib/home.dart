@@ -1,22 +1,81 @@
 // lib/home.dart (Corrected)
 
 import 'package:flutter/material.dart';
-import 'package:smart_card/scan.dart';
+import 'package:smart_card/scan.dart'; // Assuming this exists
 import 'contact.dart'; // Import the contact card widget and model
 import 'list_card.dart';
+import 'config.dart'; // Assuming this refers to your utility/api constants // Using the utility file import from previous discussion
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class HomeScreen extends StatelessWidget {
+// Changed HomeScreen from StatelessWidget to StatefulWidget
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  // Sample Data (Matching the image content)
-  // Now uses the const keyword for the ContactDetails instance
-  final sampleContact = const ContactDetails(
-    name: "Abhishek Ranjan",
-    phone: "+91 9876543210",
-    email: "abhishek@example.com",
-    city: "Chennai, TN",
-    company: "LTTS"
-  );
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  // State variables moved inside the State class
+  ContactDetails? sampleContact;
+  bool _isLoading = true;
+  String _error = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchRecentContact(); // Fetch data when the page loads
+  }
+
+  // lib/home.dart
+
+// ... (inside the _HomeScreenState class) ...
+
+  Future<void> _fetchRecentContact() async {
+    setState(() {
+      _isLoading = true;
+      _error = "";
+    });
+
+    final uri = Uri.parse(ApiConstants.recentEndpoint);
+
+    try {
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        // --- FIX IS HERE ---
+        // Decode the response as a LIST
+        final List<dynamic> jsonList = json.decode(response.body);
+        
+        if (jsonList.isNotEmpty) {
+          // If the list has items, take the first one and convert it to ContactDetails
+          final Map<String, dynamic> firstRecord = jsonList[0];
+          setState(() {
+            sampleContact = ContactDetails.fromJson(firstRecord);
+            _isLoading = false;
+          });
+        } else {
+          // Handle the case where the API returned an empty list
+          setState(() {
+            _error = "API returned no recent contacts.";
+            _isLoading = false;
+          });
+        }
+        // --- END FIX ---
+
+      } else {
+        // ... (error handling for non-200 status codes) ...
+      }
+    } catch (e) {
+      // ... (network error handling) ...
+    }
+  }
+
+// ... (rest of the code) ...
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +90,6 @@ class HomeScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          // Removed the problematic trailing comma here
           children: [
             const Text(
               "Recently Added",
@@ -39,7 +97,17 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             
-            ContactCard(contact: sampleContact),
+            // Added conditional logic to display loader, error, or card
+            Expanded(
+              child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _error.isNotEmpty
+                  ? Center(child: Text(_error))
+                  : sampleContact != null
+                    ? ContactCard(contact: sampleContact!) // '!' used as we know it's not null here
+                    : const Center(child: Text("No recent contacts found.")),
+            ),
+
             SizedBox(
               width: double.infinity, // This forces the button to expand horizontally
               child: ElevatedButton(
@@ -88,12 +156,14 @@ class HomeScreen extends StatelessWidget {
               MaterialPageRoute(builder: (context) => const ScanPage()),
             );
           },
-          child: const Text("Scan Card", style: TextStyle(fontSize: 18, color: Colors.white)),
+          child: const Text("Scan Card/DOC", style: TextStyle(fontSize: 18, color: Colors.white)),
         ),
       ),
     );
   }
 }
+
+// ... (_DocumentTile class remains unchanged) ...
 
 class _DocumentTile extends StatelessWidget {
   final String name;

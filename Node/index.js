@@ -20,10 +20,20 @@ app.get("/", (req, res) => {
   res.send("Node + CockroachDB is running!");
 });
 
-// Fetch first 10 cards
+// Fetch all cards
 app.get("/allcards", async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM public.card LIMIT 10");
+    const result = await pool.query("SELECT * FROM public.card");
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/recent", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM public.card ORDER BY created_date desc LIMIT 1");
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -126,7 +136,7 @@ app.post("/upload-card", upload.single("file"), async (req, res) => {
 
     const result = await pool.query(query, [
       cardData.name,
-      cardData.city ? `${cardData.city}, ${cardData.country}` : null,
+      cardData.city,
       cardData.company_name,
       cardData.m_no,
       cardData.mail,
